@@ -1,3 +1,3 @@
-module liquidgold
+module github.com/rogueprox/liquidgold
 
-go 1.24.1
+go 1.24
