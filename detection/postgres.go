@@ -1,11 +1,11 @@
 package detection
 
 import (
+	"bytes"
 	"context"
-	"net"
 	"fmt"
 	"io"
-	"bytes"
+	"net"
 )
 
 var pqDialer net.Dialer
