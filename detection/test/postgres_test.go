@@ -45,4 +45,10 @@ func TestDetectPostgres(t *testing.T) {
 	require.NoError(t, err)
 
 	require.True(t, ok)
+
+	notOk, err := detection.IsPostgresql(ctx, "localhost", 22)
+	require.NoError(t, err)
+
+	require.False(t, notOk)
+
 }

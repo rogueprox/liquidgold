@@ -13,7 +13,7 @@ var pqDialer net.Dialer
 func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 	conn, err := pqDialer.DialContext(ctx, "tcp4", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	defer conn.Close()
 	inMessage := []byte{
@@ -28,7 +28,7 @@ func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 	}
 	c, err := conn.Write(inMessage)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	if c != len(inMessage) {
 		return false, fmt.Errorf("written %d of %d", c, len(inMessage))
@@ -44,7 +44,7 @@ func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 		return false, err
 	}
 	if n != len(toRecv) {
-		return false, fmt.Errorf("read %d of %d", n, len(toRecv))
+		return false, nil
 	}
 	if !bytes.Equal(buffer[:n], toRecv) {
 		return false, nil
