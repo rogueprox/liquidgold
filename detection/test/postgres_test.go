@@ -127,3 +127,5 @@ func TestDetectSlow(t *testing.T) {
 	ok, err := detection.IsPostgresql(timeoutCtx, "localhost", port)
 	require.False(t, ok)
 }
+
+

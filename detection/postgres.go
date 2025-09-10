@@ -19,7 +19,7 @@ func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 		return false, nil
 	}
 	defer conn.Close()
-	inMessage := [...]byte{
+	inMessage := []byte{
 		0x00,
 		0x00,
 		0x00,
@@ -29,6 +29,15 @@ func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 		0x00,
 		0x00,
 	}
+
+	inMessage = append(inMessage, []byte("user\x00")...)
+	inMessage = append(inMessage, []byte("user\x00")...)
+	inMessage = append(inMessage, []byte("database\x00")...)
+	inMessage = append(inMessage, []byte("database\x00\x00")...)
+
+	messageLen := len(inMessage)
+	inMessage[3] = byte(messageLen)
+
 	c, err := conn.Write(inMessage[:])
 	if err != nil {
 		return false, nil
@@ -36,10 +45,10 @@ func IsPostgresql(ctx context.Context, host string, port int) (bool, error) {
 	if c != len(inMessage) {
 		return false, fmt.Errorf("written %d of %d", c, len(inMessage))
 	}
-	var buffer [11]byte
+	var buffer [4]byte
 
 	toRecv := [...]byte{
-		0x45, 0x00, 0x00, 0x00, 0x85, 0x53, 0x46, 0x41, 0x54, 0x41, 0x4c,
+		0x52, 0x00, 0x00, 0x00,
 	}
 
 	var n int
