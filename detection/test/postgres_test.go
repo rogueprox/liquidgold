@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"log"
+	"net"
 	"testing"
 	"time"
 
@@ -91,4 +93,37 @@ func BenchmarkTestIsPostgres(b *testing.B) {
 		)
 	}
 	b.StopTimer()
+}
+
+func TestDetectSlow(t *testing.T) {
+	ln, err := net.Listen("tcp4", ":0")
+	require.NoError(t, err)
+	port := ln.Addr().(*net.TCPAddr).Port
+
+	timeout := time.Second * 5
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				log.Printf("Listening err: %v", err)
+				return
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(timeout * 2):
+			}
+			_, _ = conn.Write([]byte{1, 2, 4})
+			conn.Close()
+		}
+	}()
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	ok, err := detection.IsPostgresql(timeoutCtx, "localhost", port)
+	require.False(t, ok)
 }
